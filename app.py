@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, render_template
 from modules.query_handler import handle_query
 from modules.language_support import detect_language, normalize_mixed_input
-import json, os, random
+import json, os, random, time
 from functools import lru_cache
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
@@ -77,7 +77,10 @@ def chat():
     if not user_lang:
         user_lang = detect_language(user_input)
 
+    start_time = time.time()
     response = cached_query(user_input, user_lang)
+    latency = round(time.time() - start_time, 2)
+
     disaster_type = detect_disaster_type(user_input)
     followup = None
     matched_messages = []
@@ -102,7 +105,8 @@ def chat():
 
     return jsonify({
         "response": response,
-        "followup": followup
+        "followup": followup,
+        "latency": f"{latency}s"
     })
 
 if __name__ == "__main__":
