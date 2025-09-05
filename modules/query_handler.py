@@ -36,6 +36,7 @@ def handle_query(user_input, user_lang):
         f"Respond in 5 to 7 short bullet points as required. Exclude asterisks. Use simple, student-friendly language.\n"
         f"Most important point on the first, rest others.\n"
         f"Show response only for the disaster-related question including earthquake, flood, fire, cyclone.\n"
+        f"Don't response on general question not related to disaster.\n"
         f"Be accurate and specific. Avoid general advice.\n"
         f"Show each point on the next line to previous point.\n"
         f"Respond briefly and precisely. Focus only on what the student needs to know.\n"

@@ -44,7 +44,13 @@ intro_phrases = [
     "You're doing great — ready for the next tip?",
     "Let’s take this one step further."
 ]
-
+fallback_responses = [
+    "That’s a really thoughtful question. Right now, I’m focused on disaster safety like earthquakes, floods, fires, cyclones . Want to explore one of those?",
+    "I wish I could help with everything. For now, I’m trained to support you during disasters. Let’s look at something like fire safety or flood response together.",
+    "I’m here to guide you through disaster situations. If you’re asking about earthquakes, floods, fires, cyclones, I’ve got your back. Want to try one of those?",
+    "That’s important, and I care about it. I’m built to help during disasters — maybe we can explore how to stay safe in a earthquake or cyclone or fire or flood?",
+    "I’m here for disaster safety,preparedness,alert. If you’re facing something like an earthquake or flood or fire or cyclone, I’ll do my best to support you."
+]
 def detect_disaster_type(message: str):
     msg = normalize_mixed_input(message).lower()
     if "earthquake" in msg:
@@ -90,6 +96,14 @@ def chat():
         if word in keyword_index:
             matched_messages.extend(keyword_index[word])
 
+    if not disaster_type and not matched_messages:
+        fallback_message = random.choice(fallback_responses)
+        return jsonify({
+            "response": fallback_message,
+            "followup": None,
+            "latency": f"{latency}s"
+        })
+
     if not matched_messages and disaster_type:
         fallback_blocks = disaster_queries.get(disaster_type, {}).get("followups", {}).get("keyword", [])
         if fallback_blocks:
@@ -108,6 +122,5 @@ def chat():
         "followup": followup,
         "latency": f"{latency}s"
     })
-
 if __name__ == "__main__":
     app.run(debug=True)
