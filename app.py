@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify, render_template
 from modules.query_handler import handle_query
 from modules.language_support import detect_language, normalize_mixed_input
+from modules.general_queries import general_queries
+from rapidfuzz import fuzz
 import json, os, random, time
 from functools import lru_cache
 
@@ -44,13 +46,15 @@ intro_phrases = [
     "You're doing great — ready for the next tip?",
     "Let’s take this one step further."
 ]
+
 fallback_responses = [
-    "That’s a really thoughtful question. Right now, I’m focused on disaster safety like earthquakes, floods, fires, cyclones . Want to explore one of those?",
+    "That’s a really thoughtful question. Right now, I’m focused on disaster safety like earthquakes, floods, fires, cyclones. Want to explore one of those?",
     "I wish I could help with everything. For now, I’m trained to support you during disasters. Let’s look at something like fire safety or flood response together.",
     "I’m here to guide you through disaster situations. If you’re asking about earthquakes, floods, fires, cyclones, I’ve got your back. Want to try one of those?",
-    "That’s important, and I care about it. I’m built to help during disasters — maybe we can explore how to stay safe in a earthquake or cyclone or fire or flood?",
-    "I’m here for disaster safety,preparedness,alert. If you’re facing something like an earthquake or flood or fire or cyclone, I’ll do my best to support you."
+    "That’s important, and I care about it. I’m built to help during disasters — maybe we can explore how to stay safe in an earthquake or cyclone or fire or flood?",
+    "I’m here for disaster safety, preparedness, and alerts. If you’re facing something like an earthquake or flood or fire or cyclone, I’ll do my best to support you."
 ]
+
 def detect_disaster_type(message: str):
     msg = normalize_mixed_input(message).lower()
     if "earthquake" in msg:
@@ -91,7 +95,20 @@ def chat():
     followup = None
     matched_messages = []
 
-    normalized_input = normalize_mixed_input(user_input)
+    normalized_input = normalize_mixed_input(user_input).lower()
+
+    # Multilingual general query matching
+    for phrase, translations in general_queries.items():
+        for lang_code, content in translations.items():
+            question_text = content.get("question", "").lower()
+            if fuzz.partial_ratio(question_text, normalized_input) > 85 or question_text in normalized_input:
+                reply = translations.get(user_lang, translations["en"])
+                return jsonify({
+                    "response": reply["response"],
+                    "followup": None,
+                    "latency": f"{latency}s"
+                })
+
     for word in normalized_input.split():
         if word in keyword_index:
             matched_messages.extend(keyword_index[word])
@@ -122,5 +139,6 @@ def chat():
         "followup": followup,
         "latency": f"{latency}s"
     })
+
 if __name__ == "__main__":
     app.run(debug=True)
