@@ -4,3 +4,4 @@ python-dotenv==1.0.1
 requests==2.32.3
 langdetect==1.0.9
 deep-translator==1.11.4
+rapidfuzz==3.14.0

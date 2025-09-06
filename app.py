@@ -96,8 +96,6 @@ def chat():
     matched_messages = []
 
     normalized_input = normalize_mixed_input(user_input).lower()
-
-    # Multilingual general query matching
     for phrase, translations in general_queries.items():
         for lang_code, content in translations.items():
             question_text = content.get("question", "").lower()
